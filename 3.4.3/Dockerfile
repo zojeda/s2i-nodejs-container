@@ -51,6 +51,9 @@ COPY ./s2i/bin/ $STI_SCRIPTS_PATH
 # Copy extra files to the image, including help file
 COPY ./root/ /
 
+# install default global packages
+RUN R -e "install.packages(c('shiny', 'rmarkdown', 'devtools'), repos='https://cran.rstudio.com/')"
+
 # Drop the root user and make the content of /opt/app-root owned by user 1001
 RUN chown -R 1001:0 ${APP_ROOT} && chmod -R ug+rwx ${APP_ROOT} && \
     rpm-file-permissions
@@ -58,8 +61,8 @@ RUN chown -R 1001:0 ${APP_ROOT} && chmod -R ug+rwx ${APP_ROOT} && \
 USER 1001
 
 # Set local user library path
-RUN mkdir -p ${APP_ROOT}/R/library
+RUN mkdir -p ${APP_ROOT}/R/library 
 RUN echo 'R_LIBS_USER="${APP_ROOT}/R/library"' > $HOME/.Renviron
-RUN R -e "install.packages(c('shiny', 'rmarkdown'), repos='https://cran.rstudio.com/')"
+
 # Set the default CMD to print the usage of the language image
 CMD $STI_SCRIPTS_PATH/usage
